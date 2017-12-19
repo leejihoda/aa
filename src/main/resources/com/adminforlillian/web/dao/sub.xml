@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="sub">
+	<select id="faqList" parameterType="map" resultType="map">
+		SELECT
+			FAQ_NO
+			,QUESTION
+			,ANSWER
+			,DEL_GB
+			,REG_DT
+		FROM TB_FAQ
+		WHERE 1=1
+        ORDER BY REG_DT DESC
+	</select>
+
+	<select id="faqDetail" parameterType="map" resultType="map">
+		SELECT
+			FAQ_NO
+			,QUESTION
+			,ANSWER
+			,DEL_GB
+			,REG_DT
+		FROM TB_FAQ
+		WHERE 1=1
+		AND FAQ_NO = #{FAQ_NO}
+	</select>
+
+	<insert id="faqInsert" parameterType="map" >
+		INSERT INTO TB_FAQ (
+			FAQ_NO
+			,QUESTION
+			,ANSWER
+		) VALUES (
+            SEQ_TB_FAQ_NO.NEXTVAL
+            , #{QUESTION}
+            , #{ANSWER}
+		)
+	</insert>
+
+	<update id="faqUpdate" parameterType="map">
+		UPDATE TB_FAQ
+		SET QUESTION = #{QUESTION}
+		, ANSWER = #{ANSWER}
+		WHERE FAQ_NO =  #{FAQ_NO}
+	</update>
+
+	<update id="faqDelete" parameterType="map">
+		UPDATE TB_FAQ
+		SET DEL_GB = 'Y'
+		WHERE FAQ_NO =  #{FAQ_NO}
+	</update>
+
+	<select id="fileList" parameterType="map" resultType="map">
+		SELECT
+			FILE_NO
+			,FAQ_NO
+			,FILE_NM
+			,FILE_URL
+			,DEL_GB
+			,REG_DT
+		FROM TB_FAQ_FILE
+		WHERE 1=1
+		AND FAQ_NO = #{FAQ_NO}
+		ORDER BY REG_DT DESC
+	</select>
+
+	<insert id="fileInsert" parameterType="map" >
+		INSERT INTO TB_FAQ_FILE (
+			FILE_NO
+			,FAQ_NO
+			,FILE_NM
+			,FILE_URL
+		) VALUES (
+            SEQ_TB_FAQ_FILE_NO.NEXTVAL
+			, #{FAQ_NO}
+			, #{FILE_NM}
+			, #{FILE_URL}
+		)
+	</insert>
+
+	<update id="fileUpdate" parameterType="map">
+		UPDATE TB_FAQ_FILE
+		SET FILE_NM = #{FILE_NM}
+		, FILE_URL = #{FILE_URL}
+		WHERE FILE_NO =  #{FILE_NO}
+	</update>
+
+	<update id="fileDelete" parameterType="map">
+		UPDATE TB_FAQ_FILE
+		SET DEL_GB = 'Y'
+		WHERE FILE_NO =  #{FILE_NO}
+	</update>
+
+
+	<select id="businessList" parameterType="map" resultType="map">
+		SELECT
+		BSNS_NO
+		,ORDER
+		,RESEARCH_CMPN
+		,TASK_NM
+		,RESEARCH_MNGR
+		,SUBJECTIVE_CMPN
+		,FIELD
+		,MEMO
+		,RESEARCH_SMRY
+		,ETC
+		,FILE_URL
+		,DEL_GB
+		,REG_DT
+		FROM TB_BUSINESS_TASK
+		WHERE 1=1
+		AND BSNS_NO IN (
+				SELECT
+					BSNS_NO
+				FROM TB_BUSINESS
+				WHERE D2 = #{D2}
+				<if test="CATE_NO != null and CATE_NO != ''">
+					AND CATE_NO = #{CATE_NO}
+				</if>
+		)
+		ORDER BY REG_DT DESC
+	</select>
+
+	<select id="businessDetail" parameterType="map" resultType="map">
+		SELECT
+			A.BSNS_NO
+			,A.ORDER
+			,A.RESEARCH_CMPN
+			,A.TASK_NM
+			,A.RESEARCH_MNGR
+			,A.SUBJECTIVE_CMPN
+			,A.FIELD
+			,A.MEMO
+			,A.RESEARCH_SMRY
+			,A.ETC
+			,A.FILE_URL
+			,A.DEL_GB
+			,A.REG_DT
+			,B.D2
+			,B.CATE_NO
+			,B.INFO
+			,B.CONTENT
+			,B.EFFECT
+			,B.FILE_URL1
+			,B.FILE_URL2
+			,B.FILE_URL3
+			,B.FILE_URL4
+			,B.FILE_URL5
+			,B.FILE_URL6
+			,B.FILE_URL7
+			,B.FILE_URL8
+			,B.FILE_URL9
+			,B.FILE_URL10
+		FROM TB_BUSINESS B LEFT OUTER JOIN TB_BUSINESS_TASK A ON A.BSNS_NO = B.BSNS_NO
+		WHERE 1=1
+		AND A.BSNS_NO = #{BSNS_NO}
+		ORDER BY REG_DT DESC
+	</select>
+
+	<select id="getBsnsno" resultType="int">
+		SELECT SEQ_TB_FAQ_NO.NEXTVAL FROM DUAL
+	</select>
+
+	<insert id="businessInsert" parameterType="map" >
+		INSERT INTO TB_BUSINESS (
+			BSNS_NO
+			,D2
+			,CATE_NO
+			,INFO
+			,CONTENT
+			,EFFECT
+			,FILE_URL1
+			,FILE_URL2
+			,FILE_URL3
+			,FILE_URL4
+			,FILE_URL5
+			,FILE_URL6
+			,FILE_URL7
+			,FILE_URL8
+			,FILE_URL9
+			,FILE_URL10
+		) VALUES (
+			#{BSNS_NO}
+			,#{D2}
+			,#{CATE_NO}
+			,#{INFO}
+			,#{CONTENT}
+			,#{EFFECT}
+			,#{FILE_URL1}
+			,#{FILE_URL2}
+			,#{FILE_URL3}
+			,#{FILE_URL4}
+			,#{FILE_URL5}
+			,#{FILE_URL6}
+			,#{FILE_URL7}
+			,#{FILE_URL8}
+			,#{FILE_URL9}
+			,#{FILE_URL10}
+		)
+	</insert>
+
+	<insert id="businessTaskInsert" parameterType="map" >
+		INSERT INTO TB_BUSINESS_TASK (
+			BSNS_NO
+			,ORDER
+			,RESEARCH_CMPN
+			,TASK_NM
+			,RESEARCH_MNGR
+			,SUBJECTIVE_CMPN
+			,FIELD
+			,MEMO
+			,RESEARCH_SMRY
+			,ETC
+			,FILE_URL
+		) VALUES (
+			#{BSNS_NO}
+			,#{ORDER}
+			,#{RESEARCH_CMPN}
+			,#{TASK_NM}
+			,#{RESEARCH_MNGR}
+			,#{SUBJECTIVE_CMPN}
+			,#{FIELD}
+			,#{MEMO}
+			,#{RESEARCH_SMRY}
+			,#{ETC}
+			,#{FILE_URL}
+		)
+	</insert>
+
+	<update id="businessUpdate" parameterType="map">
+		UPDATE TB_BUSINESS
+		SET D2 = #{D2}
+		,CATE_NO = #{CATE_NO}
+		,INFO = #{INFO}
+		,CONTENT = #{CONTENT}
+		,EFFECT = #{EFFECT}
+		,FILE_URL1 = #{FILE_URL1}
+		,FILE_URL2 = #{FILE_URL2}
+		,FILE_URL3 = #{FILE_URL3}
+		,FILE_URL4 = #{FILE_URL4}
+		,FILE_URL5 = #{FILE_URL5}
+		,FILE_URL6 = #{FILE_URL6}
+		,FILE_URL7 = #{FILE_URL7}
+		,FILE_URL8 = #{FILE_URL8}
+		,FILE_URL9 = #{FILE_URL9}
+		,FILE_URL10 = #{FILE_URL10}
+		WHERE BSNS_NO = #{BSNS_NO}
+	</update>
+
+	<update id="businessTaskUpdate" parameterType="map">
+		UPDATE TB_BUSINESS_TASK
+		SET ORDER = #{ORDER}
+		,RESEARCH_CMPN = #{RESEARCH_CMPN}
+		,TASK_NM = #{TASK_NM}
+		,RESEARCH_MNGR = #{RESEARCH_MNGR}
+		,SUBJECTIVE_CMPN = #{SUBJECTIVE_CMPN}
+		,FIELD = #{FIELD}
+		,MEMO = #{MEMO}
+		,RESEARCH_SMRY = #{RESEARCH_SMRY}
+		,ETC = #{ETC}
+		,FILE_URL = #{FILE_URL}
+		WHERE BSNS_NO = #{BSNS_NO}
+	</update>
+
+	<update id="businessDelete" parameterType="map">
+		UPDATE TB_BUSINESS
+		SET DEL_GB = 'Y'
+		WHERE BSNS_NO = #{BSNS_NO}
+	</update>
+
+	<update id="businessTaskDelete" parameterType="map">
+		UPDATE TB_BUSINESS_TASK
+		SET DEL_GB = 'Y'
+		WHERE BSNS_NO = #{BSNS_NO}
+	</update>
+
+</mapper>

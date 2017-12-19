@@ -1,0 +1,31 @@
+.row-content{
+    padding: 1.25rem;
+}
+
+.right-sort{
+    float:right;
+}
+
+.left-sort{
+    float:left;
+}
+
+.text-xs-left {
+    text-align: left !important;
+}
+
+.text-xs-right {
+    text-align: right !important;
+}
+
+.text-xs-center {
+    text-align: center !important;
+}
+
+.add-line-bottom{
+    border-bottom: 1px solid #f4f4f4;
+}
+
+.add-line-top{
+    border-top: 1px solid #f4f4f4;
+}

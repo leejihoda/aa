@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <bean id="data-source" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driver}" />
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.user}" />
+        <property name="password" value="${jdbc.password}" />
+    </bean>
+
+    <bean id="transaction-manager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="data-source" />
+    </bean>
+
+    <aop:config >
+        <aop:advisor pointcut="execution(* com.adminforlillian.web.facade.*Facade.*(..))" advice-ref="tx-advice"/>
+    </aop:config>
+
+    <tx:advice id="tx-advice" transaction-manager="transaction-manager">
+        <tx:attributes>
+            <tx:method name="add*"/>
+            <tx:method name="approve*"/>
+            <tx:method name="increase*"/>
+            <tx:method name="deny*"/>
+            <tx:method name="cancel*"/>
+            <tx:method name="insert*"/>
+            <tx:method name="confirm*"/>
+            <tx:method name="request*"/>
+            <tx:method name="registe*"/>
+            <tx:method name="create*"/>
+            <tx:method name="save*"/>
+            <tx:method name="modify*"/>
+            <tx:method name="update*"/>
+            <tx:method name="change*"/>
+            <tx:method name="treat*"/>
+            <tx:method name="terminate*"/>
+            <tx:method name="withdraw*"/>
+            <tx:method name="remove*"/>
+            <tx:method name="delete*"/>
+            <tx:method name="submit*"/>
+            <tx:method name="find*" read-only="true"/>
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="load*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <bean id="authSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="data-source" />
+        <property name="mapperLocations" value="classpath:com/adminforlillian/web/dao/*Mapper.xml" />
+        <property name="typeAliasesPackage" value="com.adminforlillian.web" />
+    </bean>
+
+    <bean id="authMapperScanner" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.adminforlillian.web.dao"/>
+        <property name="sqlSessionFactoryBeanName" value="authSqlSessionFactory"/>
+    </bean>
+
+    <context:annotation-config/>
+    <context:component-scan base-package="com.adminforlillian">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+</beans>
+

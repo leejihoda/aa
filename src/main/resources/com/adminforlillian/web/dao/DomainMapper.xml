@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.adminforlillian.web.dao.DomainDao">
+
+    <select id="getList" parameterType="map" resultType="map">
+        SELECT
+        DOMAIN_NO
+        , DOMAIN_NM
+        , URL
+        , USE_YN
+        , MEMBER_NO
+        , UPD_MEMBER_NO
+        , DATE_FORMAT(UPD_DT,'%Y-%m-%d %H:%I') AS UPD_DT
+        , DATE_FORMAT(REG_DT,'%Y-%m-%d %H:%I') AS REG_DT
+        FROM lillian.TB_DOMAIN_INFO
+        ORDER BY USE_YN DESC,DOMAIN_NM ASC
+    </select>
+
+    <select id="getTotal" parameterType="map" resultType="int">
+        SELECT COUNT(*) AS TOTAL
+        FROM lillian.TB_DOMAIN_INFO
+    </select>
+
+    <select id="getDetail" parameterType="map" resultType="map">
+        SELECT
+        DOMAIN_NO
+        , DOMAIN_NM
+        , URL
+        , USE_YN
+        FROM lillian.TB_DOMAIN_INFO
+        WHERE DOMAIN_NO = #{domain_no}
+    </select>
+
+    <insert id="insert" parameterType="map" >
+        INSERT INTO lillian.TB_DOMAIN_INFO (
+            DOMAIN_NM
+            , URL
+            , USE_YN
+            , MEMBER_NO
+            , UPD_MEMBER_NO
+        ) VALUES (
+            #{domain_nm}
+            , #{url}
+            , #{use_yn}
+            , #{member_no}
+            , #{member_no}
+        )
+    </insert>
+
+    <update id="update" parameterType="map">
+        UPDATE lillian.TB_DOMAIN_INFO
+        SET DOMAIN_NM = #{domain_nm}
+            , URL = #{url}
+            , USE_YN = #{use_yn}
+            , UPD_MEMBER_NO = #{member_no}
+        WHERE DOMAIN_NO =  #{domain_no}
+    </update>
+
+    <insert id="staticInsertDay" parameterType="map" >
+        INSERT INTO lillian.TB_DOMAIN_STATIC_DAY (
+        DOMAIN_NO
+        , STATUS
+        , MEMBER_NO
+        ) VALUES (
+        #{domain_no}
+        , #{status}
+        , #{member_no}
+        )
+    </insert>
+
+    <select id="getStaticDay" parameterType="map" resultType="map">
+        SELECT
+          TB.DOMAIN_NO,
+          TB.DOMAIN_NM,
+          SUM(TB.AM_SUCCESS_CNT) AS AM_SUCCESS_CNT,
+          SUM(TB.AM_FAIL_CNT)    AS AM_FAIL_CNT,
+          SUM(TB.PM_SUCCESS_CNT) AS PM_SUCCESS_CNT,
+          SUM(TB.PM_FAIL_CNT)    AS PM_FAIL_CNT
+        FROM (
+               SELECT
+                 A.DOMAIN_NO
+                 , B.DOMAIN_NM
+                 , CASE WHEN DATE_FORMAT(A.REG_DT, '%p') = 'AM' AND STATUS = 'Y' THEN 1 ELSE 0 END AS AM_SUCCESS_CNT
+                 , CASE WHEN DATE_FORMAT(A.REG_DT, '%p') = 'AM' AND STATUS = 'N' THEN 1 ELSE 0 END AS AM_FAIL_CNT
+                 , CASE WHEN DATE_FORMAT(A.REG_DT, '%p') = 'PM' AND STATUS = 'Y' THEN 1 ELSE 0 END AS PM_SUCCESS_CNT
+                 , CASE WHEN DATE_FORMAT(A.REG_DT, '%p') = 'PM' AND STATUS = 'N' THEN 1 ELSE 0 END AS PM_FAIL_CNT
+               FROM TB_DOMAIN_STATIC_DAY A LEFT OUTER JOIN TB_DOMAIN_INFO B ON A.DOMAIN_NO = B.DOMAIN_NO
+               WHERE DATE_FORMAT(A.REG_DT,'%Y-%m-%d') = #{day}
+        ) TB
+        GROUP BY TB.DOMAIN_NO,TB.DOMAIN_NM
+        ORDER BY TB.DOMAIN_NM ASC
+    </select>
+
+    <select id="getStaticDayDetail" parameterType="map" resultType="map">
+        SELECT
+          A.DOMAIN_NO
+          , B.DOMAIN_NM
+          , CASE WHEN A.STATUS = 'Y' THEN '성공' ELSE '실패' END AS STATUS
+          , DATE_FORMAT(A.REG_DT,'%Y-%m-%d %H:%I') AS REG_DT
+        FROM TB_DOMAIN_STATIC_DAY A LEFT OUTER JOIN TB_DOMAIN_INFO B ON A.DOMAIN_NO = B.DOMAIN_NO
+        WHERE A.DOMAIN_NO  = #{domain_no}
+        AND DATE_FORMAT(A.REG_DT,'%Y-%m-%d') = #{day}
+        ORDER BY A.REG_DT ASC
+    </select>
+
+    <select id="getStaticMonth" parameterType="map" resultType="map">
+        SELECT
+          C.DATE
+        , C.DOMAIN_NO
+        , C.DOMAIN_NM
+        , (SELECT
+             COUNT(*)
+           FROM TB_DOMAIN_STATIC_DAY
+           WHERE DOMAIN_NO = C.DOMAIN_NO
+                 AND DATE_FORMAT(REG_DT, '%Y-%m-%d') = C.DATE
+                 AND DATE_FORMAT(REG_DT, '%p') = 'AM'
+          ) AS AM_TOTAL
+        , (SELECT
+             COUNT(*)
+           FROM TB_DOMAIN_STATIC_DAY
+           WHERE DOMAIN_NO = C.DOMAIN_NO
+                 AND STATUS = 'N'
+                 AND DATE_FORMAT(REG_DT, '%Y-%m-%d') = C.DATE
+                 AND DATE_FORMAT(REG_DT, '%p') = 'AM'
+          ) AS AM_CNT
+        , (SELECT
+             COUNT(*)
+           FROM TB_DOMAIN_STATIC_DAY
+           WHERE DOMAIN_NO = C.DOMAIN_NO
+                 AND DATE_FORMAT(REG_DT, '%Y-%m-%d') = C.DATE
+                 AND DATE_FORMAT(REG_DT, '%p') = 'PM'
+          ) AS PM_TOTAL
+        , (SELECT
+             COUNT(*)
+           FROM TB_DOMAIN_STATIC_DAY
+           WHERE DOMAIN_NO = C.DOMAIN_NO
+                 AND STATUS = 'N'
+                 AND DATE_FORMAT(REG_DT, '%Y-%m-%d') = C.DATE
+                 AND DATE_FORMAT(REG_DT, '%p') = 'PM'
+          ) AS PM_CNT
+        FROM (
+          SELECT
+            DATE_FORMAT(A.REG_DT, '%Y-%m-%d') AS DATE,
+            A.DOMAIN_NO,
+            B.DOMAIN_NM
+          FROM TB_DOMAIN_STATIC_DAY A LEFT OUTER JOIN TB_DOMAIN_INFO B ON A.DOMAIN_NO = B.DOMAIN_NO
+          WHERE DATE_FORMAT(A.REG_DT, '%Y-%m') = #{month}
+          GROUP BY A.DOMAIN_NO, B.DOMAIN_NM, DATE
+        )C
+        ORDER BY C.DOMAIN_NM, C.DATE
+    </select>
+</mapper>
